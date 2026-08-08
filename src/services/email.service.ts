@@ -208,6 +208,17 @@ export const sendOrderStatusUpdateEmail = async (order: IOrder): Promise<void> =
             <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">${order.deliveryAddress.societyName}${order.deliveryAddress.block ? `, ${order.deliveryAddress.block}` : ''}${order.deliveryAddress.floor ? ` · Floor ${order.deliveryAddress.floor}` : ''} · Flat ${order.deliveryAddress.flatNumber}</p>
           </td>
         </tr>
+        ${order.status === 'DELIVERED' ? `
+        <tr>
+          <td style="padding:0 40px 24px;text-align:center;">
+            <div style="background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1px solid #fde68a;border-radius:14px;padding:24px 20px;">
+              <div style="font-size:20px;margin-bottom:4px;">⭐</div>
+              <p style="margin:0 0 4px;font-size:15px;font-weight:800;color:#92400e;">How were your Rakhis?</p>
+              <p style="margin:0 0 16px;font-size:12px;color:#b45309;line-height:1.4;">We would love your feedback! Rate your Rakhis and leave a review to help others.</p>
+              <a href="${frontendUrl}/review?order=${order.orderNumber}" style="display:inline-block;background:#d97706;color:#ffffff;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:12px 30px;border-radius:8px;box-shadow:0 3px 10px rgba(217,119,6,0.3);">Rate & Review Your Order →</a>
+            </div>
+          </td>
+        </tr>` : ''}
         <tr>
           <td style="padding:0 40px 36px;text-align:center;">
             <a href="${trackUrl}" style="display:inline-block;background:#1c1917;color:#ffffff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:14px 36px;border-radius:8px;">Track Your Order →</a>

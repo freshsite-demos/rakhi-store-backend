@@ -10,6 +10,7 @@ import categoryRoutes from "./routes/category.routes";
 import couponRoutes from "./routes/coupon.routes";
 import societyRoutes from "./routes/society.routes";
 import orderRoutes from "./routes/order.routes";
+import reviewRoutes from "./routes/review.routes";
 
 import mongoSanitize from "express-mongo-sanitize";
 import { env } from "./config/env";
@@ -91,6 +92,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/societies", societyRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Base route check
 app.get("/", (req, res) => {

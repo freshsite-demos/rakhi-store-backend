@@ -15,14 +15,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
       res.status(400).json({ success: false, message: 'Customer name and phone number are required' });
       return;
     }
-    if (
-      !deliveryAddress ||
-      !deliveryAddress.societyId ||
-      !deliveryAddress.block ||
-      !deliveryAddress.floor ||
-      !deliveryAddress.flatNumber
-    ) {
-      res.status(400).json({ success: false, message: 'Complete delivery details are required' });
+    if (!deliveryAddress || !deliveryAddress.societyId) {
+      res.status(400).json({ success: false, message: 'Delivery location selection is required' });
       return;
     }
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -33,10 +27,25 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     // 2. Fetch society to get its name
     const society = await Society.findById(deliveryAddress.societyId);
     if (!society || !society.isActive) {
-      res.status(400).json({ success: false, message: 'Invalid or inactive delivery society selected' });
+      res.status(400).json({ success: false, message: 'Invalid or inactive delivery location selected' });
       return;
     }
     const societyName = society.name;
+
+    // Validate fields dynamically based on whether it is a general locality or standard society
+    const isLocalityMode = society.isLocality || !society.blocks || society.blocks.length === 0;
+
+    if (isLocalityMode) {
+      if (!deliveryAddress.flatNumber) {
+        res.status(400).json({ success: false, message: 'Detailed delivery address is required' });
+        return;
+      }
+    } else {
+      if (!deliveryAddress.block || !deliveryAddress.floor || !deliveryAddress.flatNumber) {
+        res.status(400).json({ success: false, message: 'Block, floor and flat number details are required' });
+        return;
+      }
+    }
 
     // 3. Re-calculate prices and validate stock from the database
     let subtotal = 0;

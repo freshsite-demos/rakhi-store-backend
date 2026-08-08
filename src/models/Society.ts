@@ -8,6 +8,7 @@ export interface IBlock {
 export interface ISociety extends Document {
   name: string;
   blocks: IBlock[];
+  isLocality: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -22,6 +23,7 @@ const societySchema = new Schema<ISociety>(
   {
     name: { type: String, required: true, unique: true, trim: true },
     blocks: [blockSchema],
+    isLocality: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

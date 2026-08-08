@@ -15,22 +15,28 @@ export const getAllSocieties = async (req: Request, res: Response, next: NextFun
 
 export const createSociety = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name, blocks, isActive } = req.body;
+    const { name, blocks, isLocality, isActive } = req.body;
 
-    if (!name || !blocks || !Array.isArray(blocks)) {
-      res.status(400).json({ success: false, message: 'Please provide society name and blocks list' });
+    if (!name) {
+      res.status(400).json({ success: false, message: 'Please provide society/locality name' });
+      return;
+    }
+
+    if (!isLocality && (!blocks || !Array.isArray(blocks))) {
+      res.status(400).json({ success: false, message: 'Please provide blocks list for standard society' });
       return;
     }
 
     const societyExists = await Society.findOne({ name });
     if (societyExists) {
-      res.status(400).json({ success: false, message: 'Society already exists' });
+      res.status(400).json({ success: false, message: 'Location already exists' });
       return;
     }
 
     const newSociety = await Society.create({
       name,
-      blocks,
+      blocks: isLocality ? [] : blocks,
+      isLocality: !!isLocality,
       isActive: isActive !== undefined ? isActive : true,
     });
 
@@ -42,11 +48,11 @@ export const createSociety = async (req: Request, res: Response, next: NextFunct
 
 export const updateSociety = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name, blocks, isActive } = req.body;
+    const { name, blocks, isLocality, isActive } = req.body;
 
     const society = await Society.findById(req.params.id);
     if (!society) {
-      res.status(404).json({ success: false, message: 'Society not found' });
+      res.status(404).json({ success: false, message: 'Location not found' });
       return;
     }
 
@@ -55,7 +61,8 @@ export const updateSociety = async (req: Request, res: Response, next: NextFunct
       {
         $set: {
           name: name !== undefined ? name : society.name,
-          blocks: blocks !== undefined ? blocks : society.blocks,
+          blocks: blocks !== undefined ? (isLocality ? [] : blocks) : society.blocks,
+          isLocality: isLocality !== undefined ? isLocality : society.isLocality,
           isActive: isActive !== undefined ? isActive : society.isActive,
         },
       },

@@ -22,6 +22,7 @@ export interface IDeliveryAddress {
 export interface ICustomer {
   name: string;
   phone: string;
+  email?: string;
 }
 
 export interface IOrder extends Document {
@@ -73,6 +74,7 @@ const customerSchema = new Schema<ICustomer>(
   {
     name: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
+    email: { type: String, trim: true, lowercase: true },
   },
   { _id: false },
 );

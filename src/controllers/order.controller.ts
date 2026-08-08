@@ -4,7 +4,7 @@ import { Product } from '../models/Product';
 import { Coupon } from '../models/Coupon';
 import { Society } from '../models/Society';
 import { generateOrderNumber } from '../utils/generateOrderNumber';
-import { sendOrderNotificationEmail } from '../services/email.service';
+import { sendOrderNotificationEmail, sendOrderStatusUpdateEmail } from '../services/email.service';
 
 export const createOrder = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -159,7 +159,11 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     // 7. Save Order to Database
     const newOrder = await Order.create({
       orderNumber,
-      customer,
+      customer: {
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email || undefined,
+      },
       deliveryAddress: {
         societyId: deliveryAddress.societyId,
         societyName,
@@ -261,7 +265,36 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
     order.status = status;
     await order.save();
 
+    // Fire customer status update email (non-blocking)
+    sendOrderStatusUpdateEmail(order).catch((err) => {
+      console.error('Customer status email notifier crashed:', err);
+    });
+
     res.status(200).json({ success: true, message: 'Order status updated successfully', data: order });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const trackOrder = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { orderNumber } = req.params;
+
+    if (!orderNumber) {
+      res.status(400).json({ success: false, message: 'Please provide an order number' });
+      return;
+    }
+
+    const order = await Order.findOne({ orderNumber: orderNumber.toUpperCase() });
+    if (!order) {
+      res.status(404).json({ success: false, message: 'Order not found' });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
   } catch (error) {
     next(error);
   }

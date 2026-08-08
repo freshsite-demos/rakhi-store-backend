@@ -4,12 +4,14 @@ import {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  trackOrder,
 } from '../controllers/order.controller';
 import { adminAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
 router.post('/', createOrder);
+router.get('/track/:orderNumber', trackOrder);
 
 router.get('/', adminAuth as any, getAllOrders);
 router.get('/:id', adminAuth as any, getOrderById);

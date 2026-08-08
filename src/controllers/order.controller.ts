@@ -279,15 +279,21 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
 export const trackOrder = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { orderNumber } = req.params;
+    const phone = req.query.phone ? String(req.query.phone).trim() : '';
 
     if (!orderNumber) {
-      res.status(400).json({ success: false, message: 'Please provide an order number' });
+      res.status(400).json({ success: false, message: 'Please provide your Order ID' });
       return;
     }
 
-    const order = await Order.findOne({ orderNumber: orderNumber.toUpperCase() });
+    const query: any = { orderNumber: orderNumber.trim().toUpperCase() };
+    if (phone) {
+      query['customer.phone'] = phone;
+    }
+
+    const order = await Order.findOne(query);
     if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
+      res.status(404).json({ success: false, message: 'Order not found. Please verify your Order ID.' });
       return;
     }
 

@@ -125,8 +125,19 @@ export const getProductReviews = async (req: Request, res: Response, next: NextF
 export const getOrderReviews = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { orderNumber } = req.params;
+    const phone = req.query.phone ? String(req.query.phone).trim() : '';
 
-    const order = await Order.findOne({ orderNumber: String(orderNumber).trim().toUpperCase() });
+    if (!orderNumber) {
+      res.status(400).json({ success: false, message: 'Please provide your Order ID' });
+      return;
+    }
+
+    const query: any = { orderNumber: String(orderNumber).trim().toUpperCase() };
+    if (phone) {
+      query['customer.phone'] = phone;
+    }
+
+    const order = await Order.findOne(query);
     if (!order) {
       res.status(404).json({ success: false, message: 'Order not found' });
       return;

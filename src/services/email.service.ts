@@ -215,7 +215,7 @@ export const sendOrderStatusUpdateEmail = async (order: IOrder): Promise<void> =
               <div style="font-size:20px;margin-bottom:4px;">⭐</div>
               <p style="margin:0 0 4px;font-size:15px;font-weight:800;color:#92400e;">How were your Rakhis?</p>
               <p style="margin:0 0 16px;font-size:12px;color:#b45309;line-height:1.4;">We would love your feedback! Rate your Rakhis and leave a review to help others.</p>
-              <a href="${frontendUrl}/review?order=${order.orderNumber}" style="display:inline-block;background:#d97706;color:#ffffff;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:12px 30px;border-radius:8px;box-shadow:0 3px 10px rgba(217,119,6,0.3);">Rate & Review Your Order →</a>
+              <a href="${frontendUrl}/review?order=${order.orderNumber}&phone=${encodeURIComponent(order.customer.phone)}" style="display:inline-block;background:#d97706;color:#ffffff;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:12px 30px;border-radius:8px;box-shadow:0 3px 10px rgba(217,119,6,0.3);">Rate & Review Your Order →</a>
             </div>
           </td>
         </tr>` : ''}

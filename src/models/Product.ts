@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IProduct extends Document {
   name: string;
@@ -6,9 +6,10 @@ export interface IProduct extends Document {
   imageUrl: string;
   price: number;
   discountedPrice?: number;
-  category: string; // Storing category name as string or Category ID reference. We'll use string to keep category lookup simple or Category ID. Category name/string is highly portable and matches backend folder spec.
+  category: string;
   stock: number;
   isAvailable: boolean;
+  availableSocieties: Types.ObjectId[]; // empty = available in all regions
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const productSchema = new Schema<IProduct>(
     category: { type: String, required: true, trim: true },
     stock: { type: Number, required: true, default: 0, min: 0 },
     isAvailable: { type: Boolean, default: true },
+    availableSocieties: [{ type: Schema.Types.ObjectId, ref: 'Society' }],
   },
   { timestamps: true }
 );

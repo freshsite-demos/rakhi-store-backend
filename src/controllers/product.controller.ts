@@ -4,7 +4,7 @@ import { uploadImageToCloudinary } from '../services/cloudinary.service';
 
 export const getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { search, category, minPrice, maxPrice, sort, isAvailable } = req.query;
+    const { search, category, minPrice, maxPrice, sort, isAvailable, societyId } = req.query;
 
     const query: any = {};
 
@@ -23,8 +23,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
       query.category = String(category);
     }
 
-    // 3. Price Filter (using the actual selling price, which is discountedPrice if exists, otherwise price)
-    // For standard MongoDB queries, we can filter using the base price or a range. Let's do simple price-range query.
+    // 3. Price Filter
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
@@ -34,6 +33,19 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
     // 4. Availability Filter
     if (isAvailable !== undefined) {
       query.isAvailable = isAvailable === 'true';
+    }
+
+    // 5. Region/Society Filter — show global products (empty array) OR products tagged to this society
+    if (societyId) {
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $or: [
+            { availableSocieties: { $size: 0 } },
+            { availableSocieties: societyId },
+          ],
+        },
+      ];
     }
 
     // Prepare search
@@ -91,6 +103,16 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       return;
     }
 
+    // Parse availableSocieties from JSON string or comma-separated
+    let availableSocieties: string[] = [];
+    if (req.body.availableSocieties) {
+      try {
+        availableSocieties = JSON.parse(req.body.availableSocieties);
+      } catch {
+        availableSocieties = String(req.body.availableSocieties).split(',').filter(Boolean);
+      }
+    }
+
     const newProduct = await Product.create({
       name,
       description,
@@ -100,6 +122,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       category,
       stock: Number(stock),
       isAvailable: isAvailable === 'true' || isAvailable === true,
+      availableSocieties,
     });
 
     res.status(201).json({ success: true, data: newProduct });
@@ -125,6 +148,16 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       imageUrl = req.body.imageUrl;
     }
 
+    // Parse availableSocieties
+    let availableSocieties: string[] | undefined;
+    if (req.body.availableSocieties !== undefined) {
+      try {
+        availableSocieties = JSON.parse(req.body.availableSocieties);
+      } catch {
+        availableSocieties = String(req.body.availableSocieties).split(',').filter(Boolean);
+      }
+    }
+
     const updateFields: any = {
       name: name !== undefined ? name : product.name,
       description: description !== undefined ? description : product.description,
@@ -133,6 +166,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       category: category !== undefined ? category : product.category,
       stock: stock !== undefined ? Number(stock) : product.stock,
       isAvailable: isAvailable !== undefined ? (isAvailable === 'true' || isAvailable === true) : product.isAvailable,
+      ...(availableSocieties !== undefined && { availableSocieties }),
     };
 
     if (discountedPrice !== undefined) {

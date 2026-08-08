@@ -10,7 +10,7 @@ import { adminAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.get('/', getAllCoupons);
+router.get('/', adminAuth as any, getAllCoupons);
 router.post('/validate', validateCoupon);
 
 router.post('/', adminAuth as any, createCoupon);

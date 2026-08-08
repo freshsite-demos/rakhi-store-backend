@@ -16,4 +16,5 @@ export const env = {
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "admin@rakhistore.com",
   FROM_EMAIL: process.env.FROM_EMAIL || "hello@engagegpt.in",
   TO_EMAIL: process.env.TO_EMAIL || "pahwabharat15@gmail.com",
+  FRONTEND_URL: process.env.FRONTEND_URL || "",
 };
